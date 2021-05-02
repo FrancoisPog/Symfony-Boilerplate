@@ -1,0 +1,27 @@
+## -- PRODUCTION --
+
+# Build assets with webpack-encore
+FROM node:14-alpine as node-build
+
+WORKDIR /var/www/app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+# Install the application
+FROM docker.francois.poguet.com/symfony5-php-dev
+
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+WORKDIR /var/www/app
+
+COPY . .
+
+COPY --from=node-build /var/www/app/public/build ./public/build
+
+

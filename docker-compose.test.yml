@@ -1,0 +1,31 @@
+## -- TESTING --
+version: "3.7"
+
+networks:
+  symfony5:
+
+services:
+  php:
+    image: docker.francois.poguet.com/symfony5-php-dev:latest
+    container_name: php-container
+    working_dir: /var/www/app
+    volumes:
+      - ".:/var/www/app"
+    networks:
+      - symfony5
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8
+    container_name: mysql-container
+    volumes:
+      - $HOME/docker-mysql/symfony5:/var/lib/mysql
+      - ./docker/mysql/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    cap_add:
+      - SYS_NICE
+    networks:
+      - symfony5
+    command: --default-authentication-plugin=mysql_native_password

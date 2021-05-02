@@ -1,0 +1,55 @@
+## -- PRODUCTION --
+version: "3.7"
+
+networks:
+  symfony5:
+
+volumes:
+  app:
+
+services:
+  nginx:
+    image: docker.francois.poguet.com/symfony5-nginx-prod:latest
+    container_name: nginx-container
+    ports:
+      - "3001:80"
+    volumes:
+      - app:/var/www/app
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - symfony5
+    restart: unless-stopped
+
+  php:
+    image: docker.francois.poguet.com/symfony5-php-prod:latest
+    container_name: php-container
+    working_dir: /var/www/app
+    environment:
+      - APP_MAINTENANCE
+    volumes:
+      - app:/var/www/app
+      - ./.env:/var/www/app/.env
+    depends_on:
+      - mysql
+    networks:
+      - symfony5
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8
+    container_name: mysql-container
+    volumes:
+      - $HOME/docker-mysql/symfony5:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: symfony5
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+    cap_add:
+      - SYS_NICE
+    networks:
+      - symfony5
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
