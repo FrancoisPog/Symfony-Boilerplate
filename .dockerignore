@@ -1,0 +1,30 @@
+## -- PRODUCTION --
+
+# IDE
+.vscode
+
+# Environment
+.env*
+
+# Node
+node_modules
+npm-debug.log
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Git
+.git
+.gitignore
+
+# Useless
+README.md
+LICENSE
+
+# Symfony
+vendor
+var
+.phpunit*
+tests

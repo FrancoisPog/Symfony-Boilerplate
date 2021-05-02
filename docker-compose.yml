@@ -1,0 +1,56 @@
+## -- DEVELOPMENT --
+version: "3.7"
+
+networks:
+  symfony5:
+
+services:
+  php:
+    image: docker.francois.poguet.com/symfony5-php-dev:latest
+    container_name: php-container
+    volumes:
+      - ".:/var/www/app"
+    ports:
+      - "8000:8000"
+    networks:
+      - symfony5
+    depends_on:
+      - mysql
+      - node
+    working_dir: /var/www/app
+    command: symfony server:start --no-tls
+
+  mysql:
+    image: mysql:8
+    container_name: mysql-container
+    volumes:
+      - $HOME/docker-mysql/symfony5:/var/lib/mysql
+      - ./docker/mysql/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    cap_add:
+      - SYS_NICE
+    networks:
+      - symfony5
+    command: --default-authentication-plugin=mysql_native_password
+
+  node:
+    image: node:alpine
+    container_name: node-container
+    working_dir: /var/www/app
+    volumes:
+      - ".:/var/www/app"
+    networks:
+      - symfony5
+    ports:
+      - "8080:8080"
+    command: npm run dev-server
+    init: true
+
+  adminer:
+    image: adminer
+    container_name: adminer-container
+    ports:
+      - "8081:8080"
+    networks:
+      - symfony5
