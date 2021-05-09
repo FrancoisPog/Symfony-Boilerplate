@@ -59,7 +59,35 @@ Encore
   // enables Sass/SCSS support
   .enableSassLoader()
 
-  .enablePostCssLoader();
+  .enablePostCssLoader()
+
+  .enablePreactPreset({
+    preactCompat: true,
+  })
+
+  .configureBabel((config) => {
+    // Find the "@babel/plugin-transform-react-jsx" plugin among babel plugins
+    const transformReactJsxPlugin = config.plugins.find(
+      (p) =>
+        p instanceof Array && p.includes("@babel/plugin-transform-react-jsx")
+    );
+
+    // Add option to this plugins
+    transformReactJsxPlugin.push({
+      pragma: "h",
+      pragmaFrag: "Fragment",
+    });
+
+    // Add another plugin to auto import "h" in .jsx files
+    config.plugins.push([
+      "babel-plugin-jsx-pragmatic",
+      {
+        module: "preact",
+        import: "h, Fragment",
+        export: "h, Fragment",
+      },
+    ]);
+  });
 
 // .configureDevServerOptions((options) => {
 //   options.https = {

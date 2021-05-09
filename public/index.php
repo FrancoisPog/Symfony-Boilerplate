@@ -11,7 +11,7 @@ require dirname(__DIR__).'/vendor/autoload.php';
 
 if ($_SERVER['APP_MAINTENANCE'] ?? getenv('APP_MAINTENANCE')) {
     echo "<html><body><h1 style='font-family: monospace;'>Upgrade in progress... Please retry in a few seconds.</h1></body></html>";
-    die;
+    exit;
 }
 
 if ($_SERVER['APP_DEBUG']) {

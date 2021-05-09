@@ -1,10 +1,12 @@
 <div>
-    <img src="https://user-images.githubusercontent.com/59446609/116796379-29751c80-aadc-11eb-9b9b-87b7ee987c7e.png"  height="100" />
-    <img src="https://user-images.githubusercontent.com/59446609/116796475-fed79380-aadc-11eb-88c6-45fede1a272a.png"  height="100" />
-    <img src="https://user-images.githubusercontent.com/59446609/116796496-23337000-aadd-11eb-9c7f-639a5649c95c.png"  height="100" />
-    <img src="https://user-images.githubusercontent.com/59446609/116796506-40683e80-aadd-11eb-9755-3789f809195d.png"  height="100" />
-    <img src="https://user-images.githubusercontent.com/59446609/116796535-6f7eb000-aadd-11eb-8629-e4f19af1475c.png"  height="100" />
-    <img src="https://user-images.githubusercontent.com/59446609/116796566-b371b500-aadd-11eb-820e-533c5538903e.png"  height="100" />
+    <img src="https://user-images.githubusercontent.com/59446609/116796379-29751c80-aadc-11eb-9b9b-87b7ee987c7e.png" title="Symfony"  height="100" />
+    <img src="https://user-images.githubusercontent.com/59446609/116796475-fed79380-aadc-11eb-88c6-45fede1a272a.png" title="Docker"  height="100" />
+    <img src="https://user-images.githubusercontent.com/59446609/116796496-23337000-aadd-11eb-9c7f-639a5649c95c.png" title="MySQL" height="100" />
+    <img src="https://user-images.githubusercontent.com/59446609/116796506-40683e80-aadd-11eb-9755-3789f809195d.png" title="Webpack" height="100" />
+    <img src="https://user-images.githubusercontent.com/59446609/116796535-6f7eb000-aadd-11eb-8629-e4f19af1475c.png" title="Github Actions" height="100" />
+    <img src="https://user-images.githubusercontent.com/59446609/117873763-74432100-b2a0-11eb-916a-4e7869486611.png" title="ViteJS" height="100" />
+    <img src="https://user-images.githubusercontent.com/59446609/117873869-8d4bd200-b2a0-11eb-8a9e-91d7ecbaf8dc.png" title="Taskfile" height="100" />
+    <img src="https://user-images.githubusercontent.com/59446609/117874011-c4ba7e80-b2a0-11eb-88f7-c2ef46c7716f.png" title="Preact" height="100" />
 </div>
 
 # Symfony 5 Boilerplate
@@ -15,7 +17,7 @@ We use [Docker](https://www.docker.com/) & [Docker-compose](https://docs.docker.
 
 For databases, we are using [MySQL](https://www.mysql.com/) here, but it can be easily adapted for [MariaDB](https://mariadb.org/) or [Postgres](https://www.postgresql.org/).
 
-To improve frontend development, we use [Webpack-encore](https://symfony.com/doc/current/frontend.html#webpack-encore), configured to use [SCSS](https://sass-lang.com/), and it can be easily adapted to use other frontend frameworks, like [Vue.js](https://vuejs.org/) or [React](https://reactjs.org/).
+To improve frontend development, we use [Webpack-encore](https://symfony.com/doc/current/frontend.html#webpack-encore), configured to use [SCSS](https://sass-lang.com/) and [PReact](https://preactjs.com/). A [ViteJS](https://vitejs.dev/) is configured to automatically reload the page, whenever a twig template is updated.
 
 To automate testing and deployment, we use [Github Actions](https://github.com/features/actions) workflows. Tests will be run in each pull request, and the application will be deployed each time the `main` branch is updated.
 
@@ -29,7 +31,7 @@ For the production environment, we use [Nginx](https://www.nginx.com/) to serve 
   - [Table of contents](#table-of-contents)
   - [Requirements](#requirements)
   - [Configuration before use](#configuration-before-use)
-    - [Copy sample files](#copy-sample-files)
+    - [Override environment files](#override-environment-files)
     - [Build Docker images](#build-docker-images)
     - [Configure the development database](#configure-the-development-database)
     - [Install development dependencies](#install-development-dependencies)
@@ -38,6 +40,7 @@ For the production environment, we use [Nginx](https://www.nginx.com/) to serve 
     - [Stop the server](#stop-the-server)
     - [Testing](#testing)
     - [Continuous integration](#continuous-integration)
+    - [Taskfile](#taskfile)
   - [Deploy in production](#deploy-in-production)
     - [Production environment](#production-environment)
     - [Continous deployment](#continous-deployment)
@@ -52,15 +55,11 @@ For the production environment, we use [Nginx](https://www.nginx.com/) to serve 
 
 _In this repository, we use my personal registry `docker.francois.poguet.com`, adapt it to use yours_.
 
-
 ## Configuration before use
 
-### Copy sample files
+### Override environment files
 
-Some files in the repository are examples and you must copy them to have an instance locally, suitable for your environment.
-The `.env` and the `.env.test` (an override version for testing) must be created from the `.env.sample` and `.env.test.sample`.
-Same thing for the `docker-compose.yml` file, which must be created from the `docker-compose.sample.yml` file.
-_Make sure you copy them and don't rename them, to leave them versioned in the repository._
+The `.env` and `docker-compose.yml` files are for the local development environment, so you can replace them to suit your local needs, with the `.env.local` and` docker-compose.override files .yml`.
 
 ### Build Docker images
 
@@ -106,9 +105,7 @@ _You can use the `-d` option to run in detached mode, to keep control of your te
 docker-compose up
 ```
 
-Four services will start with this command, `php` to run the Symfony server, `node` to run the Webpack-encore development server, `MySQL` to run the databases and` adminer` to run Adminer, a web interface to interact with databases.
-
-The Symfony application will run on [localhost:8000](localhost:8000) and Adminer on [localhost:8081](localhost:8081).
+The Symfony application will run on [localhost:8000](localhost:8000) and PhpMyAdmin on [localhost:8081](localhost:8082).
 
 _You can change these ports as you want, you can also change the directory where MySQL data is stored (`$HOME/docker-MySQL/sf5/` by default) but this one must be empty before initialization to avoid a lot of problems (in particular, the directory should not be the `/var/lib/MySQL` used by the MySQL service)._
 
@@ -140,11 +137,15 @@ _We use a `.env.test` file to override the `.env` for testing, for example to us
 
 ### Continuous integration
 
-A workflow is configured to automatically run the tests in Github Actions, in each pull request (`.github/workflows/test.yml`). It use a specific `docker-compose` and `.env` file (in `.github/test/`), without Adminer and no running Symfony and Node servers.
+A workflow is configured to automatically run the tests in Github Actions, in each pull request (`.github/workflows/test.yml`). It use a specific `docker-compose` and `.env` file, without development tools.
 
 _The PHP development image is pulled from your registry into the Github Actions server for testing, so be sure you pushed them_.
 
 **The workflow uses [Github Secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) to keep private your credentials for your docker registry, don't forget to populate them in your github repository.**
+
+### Taskfile
+
+To simplify commands through containers, I personally use Taskfile. You can install it [here](https://taskfile.dev), and type `task --list` to see the list of available tasks.
 
 ## Deploy in production
 

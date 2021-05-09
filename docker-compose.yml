@@ -16,7 +16,7 @@ services:
       - symfony5
     depends_on:
       - mysql
-      - node
+      - encore
     working_dir: /var/www/app
     command: symfony server:start --no-tls
 
@@ -34,9 +34,9 @@ services:
       - symfony5
     command: --default-authentication-plugin=mysql_native_password
 
-  node:
-    image: node:alpine
-    container_name: node-container
+  encore:
+    image: node:14-alpine
+    container_name: encore-container
     working_dir: /var/www/app
     volumes:
       - ".:/var/www/app"
@@ -47,10 +47,24 @@ services:
     command: npm run dev-server
     init: true
 
-  adminer:
-    image: adminer
-    container_name: adminer-container
+  phpmyadmin:
+    image: phpmyadmin
     ports:
-      - "8081:8080"
+      - 8082:80
     networks:
       - symfony5
+    environment:
+      - PMA_ARBITRARY=1
+
+  vite:
+    image: node:14-alpine
+    container_name: vite-container
+    working_dir: /var/www/app
+    volumes:
+      - ".:/var/www/app"
+    networks:
+      - symfony5
+    ports:
+      - "3000:3000"
+    command: npm run vite
+    init: true

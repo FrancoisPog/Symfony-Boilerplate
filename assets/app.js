@@ -7,3 +7,8 @@
 
 // any CSS you import will output into a single css file (app.scss in this case)
 import "./styles/app.scss";
+
+import register from "preact-custom-element";
+import { Greeting } from "./components/Greeting";
+
+register(Greeting, "x-greeting", ["name"]);

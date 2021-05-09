@@ -27,14 +27,8 @@ jobs:
           username: ${{ secrets.DOCKER_LOGIN }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Set the .env file
-        run: mv .github/test/.env ./.env
-
-      - name: Set the docker-compose file
-        run: mv .github/test/docker-compose.test.yml ./docker-compose.yml
-
       - name: Install php dependencies
-        run: docker-compose run -T php composer install
+        run: docker-compose -f docker-compose.test.yml run --rm -T php composer install
 
       - name: Run tests
-        run: docker-compose run -T php php ./bin/phpunit
+        run: docker-compose -f docker-compose.test.yml run --rm  -T php php ./bin/phpunit

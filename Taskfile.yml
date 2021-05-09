@@ -1,0 +1,93 @@
+version: "3"
+
+env:
+  DATABASE_USER: username
+  DOCKER_REGISTRY: docker.francois.poguet.com
+
+tasks:
+  up:
+    desc: Start the docker containers (detached mode)
+    cmds:
+      - task up-verbose -- -d
+
+  up-verbose:
+    desc: Start the docker containers (attached mode)
+    cmds:
+      - docker-compose up {{.CLI_ARGS}}
+    preconditions:
+      - sh: "[ `docker-compose ps -q | wc -l` -eq 0 ]"
+        msg: Docker containers are already running
+      - sh: "[ -d vendor  ]"
+        msg: Symfony dependencies must be installed locally, please run "task composer-install" or "task install"
+      - sh: "[ -d node_modules  ]"
+        msg: Webpack-Encore and ViteJS dependencies must be installed locally, please run "task npm-install" or "task install"
+
+  down:
+    desc: Stop the docker containers
+    cmds:
+      - docker-compose down
+
+  install:
+    desc: Install all dependencies
+    cmds:
+      - task composer-install
+      - task npm-install
+
+  composer-install:
+    desc: Install a composer dependencies
+    cmds:
+      - docker-compose run --rm --no-deps php composer install {{.CLI_ARGS}}
+
+  npm-install:
+    desc: Install a npm dependencies
+    cmds:
+      - docker-compose run --rm encore npm install {{.CLI_ARGS}}
+
+  php:
+    desc: Run a command on the (running) php container
+    cmds:
+      - docker-compose exec php {{.CLI_ARGS}}
+    preconditions:
+      - sh: "[ `docker-compose top php | wc -l` -gt 0 ]"
+        msg: The php container must be running, please run "task up"
+
+  symfony:
+    desc: Run a symfony command
+    cmds:
+      - docker-compose exec php php bin/console {{.CLI_ARGS}}
+    preconditions:
+      - sh: "[ `docker-compose top php | wc -l` -gt 0 ]"
+        msg: The php container must be running, please run "task up"
+
+  mysql:
+    desc: Run mysql prompt command
+    cmds:
+      - docker-compose exec mysql mysql -u {{.DATABASE_USER}} -p
+    preconditions:
+      - sh: "[ `docker-compose top mysql | wc -l` -gt 0 ]"
+        msg: The mysql container must be running, please run "task up"
+
+  setup-dev:
+    desc: Setup the development environment, build and push the php development image
+    cmds:
+      - docker login {{.DOCKER_REGISTRY}}
+      - docker build -t {{.DOCKER_REGISTRY}}/symfony5-php-dev -f ./docker/php/Dockerfile.dev .
+      - docker push {{.DOCKER_REGISTRY}}/symfony5-php-dev
+
+  clear-cache:
+    desc: Clear the symfony cache
+    cmds:
+      - docker-compose run --no-deps --rm php php bin/console cache:clear
+
+  test:
+    desc: Run Symfony tests
+    cmds:
+      - docker-compose -f docker-compose.test.yml run --rm php php bin/phpunit
+      - task down
+    preconditions:
+      - sh: "[ `docker-compose ps -q | wc -l` -eq 0 ]"
+        msg: Docker containers are already running
+      - sh: "[ -d vendor  ]"
+        msg: Symfony dependencies must be installed locally, please run "task composer-install" or "task install"
+      - sh: "[ -d node_modules  ]"
+        msg: Webpack-Encore and ViteJS dependencies must be installed locally, please run "task npm-install" or "task install"
